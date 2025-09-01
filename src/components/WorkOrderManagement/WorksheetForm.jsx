@@ -3,6 +3,24 @@ import { useReactToPrint } from "react-to-print";
 import jsPDF from "jspdf";
 import html2canvas from "html2canvas";
 
+// Mock customer lookup
+const mockCustomerLookup = (contact_no) => {
+  const data = {
+    "9876543210": {
+      full_name: "John Doe",
+      alternate_no: "9123456789",
+      mail_id: "john@example.com",
+      comm_channel: "Email",
+      address_line1: "123 Main Street",
+      address_line2: "Near Park",
+      city: "Bangalore",
+      state: "Karnataka",
+      pincode: "560001",
+    },
+  };
+  return data[contact_no] || null;
+};
+
 // Mock device data
 const mockDeviceLookup = (imei) => {
   const data = {
@@ -34,6 +52,8 @@ export default function DynamicDeviceForm() {
   const [formData, setFormData] = useState({});
   const [notFound, setNotFound] = useState(false);
   const [imeiEmpty, setImeiEmpty] = useState(false);
+  const [customerNotFound, setCustomerNotFound] = useState(false);
+  const [customerFetched, setCustomerFetched] = useState(false);
   const printRef = useRef();
 
   const handlePrint = useReactToPrint({
@@ -67,6 +87,25 @@ export default function DynamicDeviceForm() {
     }));
   };
 
+  const fetchCustomerInfo = () => {
+    if (!formData.contact_no?.trim()) {
+      setCustomerNotFound(true);
+      return;
+    }
+    const customerDetails = mockCustomerLookup(formData.contact_no);
+    if (customerDetails) {
+      setFormData((prev) => ({
+        ...prev,
+        ...customerDetails,
+      }));
+      setCustomerFetched(true);
+      setCustomerNotFound(false);
+    } else {
+      setCustomerNotFound(true);
+      setCustomerFetched(false);
+    }
+  };
+
   const fetchDeviceInfo = () => {
     if (!formData.imei?.trim()) {
       setImeiEmpty(true);
@@ -93,16 +132,50 @@ export default function DynamicDeviceForm() {
   };
 
   return (
-    <div className="space-y-6 p-6 bg-white  rounded  h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar">
-      <div ref={printRef} className="">
+    <div className="space-y-6 p-6 bg-white rounded h-[calc(100vh-200px)] overflow-y-auto custom-scrollbar">
+      <div ref={printRef}>
         <form onSubmit={handleSubmit}>
           {/* Customer Section */}
           <section className="space-y-4">
-            <h3 className="text-xl font-bold text-[var(--primary)] border-b pb-2">Customer & Address Details</h3>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <h3 className="text-xl font-bold text-[var(--primary)] border-b pb-2">
+              Customer & Address Details
+            </h3>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
+              {/* Contact No */}
+              <div>
+                <label
+                  htmlFor="contact_no"
+                  className="block text-sm font-medium text-black mb-1"
+                >
+                  Contact No *
+                </label>
+                <input
+                  id="contact_no"
+                  name="contact_no"
+                  value={formData.contact_no || ""}
+                  onChange={handleChange}
+                  required
+                  className="border p-2 w-full rounded border-[var(--secondary)] text-black"
+                />
+              </div>
+              <button
+                type="button"
+                onClick={fetchCustomerInfo}
+                className="bg-[var(--primary)] text-white px-2 py-2 rounded hover:bg-[var(--primary)] h-fit self-end"
+              >
+                Fetch
+              </button>
+            </div>
+            {customerNotFound && (
+              <p className="text-red-500 text-sm">
+                No customer found. Please enter details manually.
+              </p>
+            )}
+
+            {/* Other Customer Fields */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
               {[
                 { name: "full_name", label: "Full Name *", required: true },
-                { name: "contact_no", label: "Contact No *", required: true },
                 { name: "alternate_no", label: "Alternate No" },
                 { name: "mail_id", label: "Mail ID *", type: "email", required: true },
                 { name: "comm_channel", label: "Communication Channel" },
@@ -113,7 +186,10 @@ export default function DynamicDeviceForm() {
                 { name: "pincode", label: "Pincode *", required: true },
               ].map(({ name, label, type = "text", required }) => (
                 <div key={name}>
-                  <label htmlFor={name} className="block text-sm font-medium text-black mb-1">
+                  <label
+                    htmlFor={name}
+                    className="block text-sm font-medium text-black mb-1"
+                  >
                     {label}
                   </label>
                   <input
@@ -123,7 +199,12 @@ export default function DynamicDeviceForm() {
                     value={formData[name] || ""}
                     onChange={handleChange}
                     required={required}
-                    className="border p-2 w-full rounded border-[var(--secondary)] text-black"
+                    className={`border p-2 w-full rounded border-[var(--secondary)] text-black ${
+                      !customerFetched && !customerNotFound
+                        ? "bg-gray-100 cursor-not-allowed"
+                        : ""
+                    }`}
+                    disabled={!customerFetched && !customerNotFound}
                   />
                 </div>
               ))}
@@ -131,11 +212,16 @@ export default function DynamicDeviceForm() {
           </section>
 
           {/* Device Info Section */}
-          <section className="space-y-4 mt-5 ">
-            <h3 className="text-xl font-bold text-[var(--primary)] border-b pb-2">Handset Information</h3>
+          <section className="space-y-4 mt-5">
+            <h3 className="text-xl font-bold text-[var(--primary)] border-b pb-2">
+              Handset Information
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 items-end">
               <div>
-                <label htmlFor="imei" className="block text-sm font-medium text-black mb-1">
+                <label
+                  htmlFor="imei"
+                  className="block text-sm font-medium text-black mb-1"
+                >
                   IMEI *
                 </label>
                 <input
@@ -150,13 +236,17 @@ export default function DynamicDeviceForm() {
               <button
                 type="button"
                 onClick={fetchDeviceInfo}
-                className="bg-[var(--primary)] text-white px-2  py-2 rounded hover:bg-[var(--primary)] h-fit self-end"
+                className="bg-[var(--primary)] text-white px-2 py-2 rounded hover:bg-[var(--primary)] h-fit self-end"
               >
                 Fetch
               </button>
             </div>
-            {imeiEmpty && <p className="text-red-500 text-sm">Please enter an IMEI.</p>}
-            {notFound && <p className="text-red-500 text-sm">No device found for this IMEI.</p>}
+            {imeiEmpty && (
+              <p className="text-red-500 text-sm">Please enter an IMEI.</p>
+            )}
+            {notFound && (
+              <p className="text-red-500 text-sm">No device found for this IMEI.</p>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {DeviceFields.map((field) => (
                 <div key={field.key}>
@@ -168,7 +258,7 @@ export default function DynamicDeviceForm() {
                     name={field.key}
                     value={formData[field.key] || ""}
                     readOnly
-                    className="border p-2 w-full  rounded border border-[var(--secondary)] bg-gray-100 text-black cursor-not-allowed"
+                    className="border p-2 w-full rounded border-[var(--secondary)] bg-gray-100 text-black cursor-not-allowed"
                   />
                 </div>
               ))}
@@ -177,9 +267,14 @@ export default function DynamicDeviceForm() {
 
           {/* Issue Section */}
           <section className="space-y-4 mt-5">
-            <h3 className="text-xl font-bold text-[var(--primary)] border-b pb-2">Issue Information</h3>
+            <h3 className="text-xl font-bold text-[var(--primary)] border-b pb-2">
+              Issue Information
+            </h3>
             <div>
-              <label htmlFor="issue_title" className="block text-sm font-medium text-black mb-1">
+              <label
+                htmlFor="issue_title"
+                className="block text-sm font-medium text-black mb-1"
+              >
                 Issue Title *
               </label>
               <input
@@ -192,7 +287,10 @@ export default function DynamicDeviceForm() {
               />
             </div>
             <div>
-              <label htmlFor="issue_details" className="block text-sm font-medium text-black mb-1">
+              <label
+                htmlFor="issue_details"
+                className="block text-sm font-medium text-black mb-1"
+              >
                 Issue Details *
               </label>
               <textarea
@@ -228,7 +326,6 @@ export default function DynamicDeviceForm() {
         >
           Submit
         </button>
-      
         <button
           type="button"
           onClick={handleDownloadPDF}

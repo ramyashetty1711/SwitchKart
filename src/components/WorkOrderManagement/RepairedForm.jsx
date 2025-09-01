@@ -2,7 +2,6 @@ import React, { useState, useRef } from "react";
 
 export default function RepairedForm() {
   const [formData, setFormData] = useState({
-    jobSheetNo: "",
     submissionCategory: "",
     customerPhone: "",
     handoverTo: "",
@@ -80,21 +79,14 @@ export default function RepairedForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 p-6 bg-white  rounded h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar"
+      className="space-y-6 p-6 bg-white rounded h-full overflow-y-auto custom-scrollbar"
     >
-      <h2 className="text-xl font-bold text-[var(--primary)] border-b pb-2">
+      <h2 className="px-2 py-2 font-semibold text-[var(--primary)] border-b dark:border-gray-700">
         Repaired Handover Form
       </h2>
 
       {/* Grid for input fields */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <InputField
-          label="Job Sheet Number"
-          name="jobSheetNo"
-          value={formData.jobSheetNo}
-          onChange={handleChange}
-          placeholder="Enter Job Sheet Number"
-        />
         <SelectField
           label="Submission Category"
           name="submissionCategory"
@@ -102,13 +94,13 @@ export default function RepairedForm() {
           onChange={handleChange}
           options={["Walk-in", "Pick-up", "Courier"]}
         />
-        <InputField
+        {/* <InputField
           label="Customer Phone No"
           name="customerPhone"
           value={formData.customerPhone}
           onChange={handleChange}
           placeholder="Enter Customer Phone No"
-        />
+        /> */}
         <InputField
           label="Handover To (Name)"
           name="handoverTo"
@@ -140,19 +132,17 @@ export default function RepairedForm() {
       </div>
 
       {/* Remarks Section */}
-   
-        <TextAreaField
-          label="Remarks"
-          name="remarks"
-          value={formData.remarks}
-          onChange={handleChange}
-          placeholder="Additional notes or signature"
-        />
-      
+      <TextAreaField
+        label="Remarks"
+        name="remarks"
+        value={formData.remarks}
+        onChange={handleChange}
+        placeholder="Additional notes or signature"
+      />
 
       {/* OTP Section */}
-      <div className="mt-4 p-4 bg-gray-50  rounded-lg ">
-        <label className="block text-sm font-medium text-[var(--secondary)]  mb-3">
+      <div className="mt-4 p-4 bg-gray-50 rounded-lg">
+        <label className="block text-sm font-medium text-[var(--secondary)] mb-3">
           OTP Verification
         </label>
 
@@ -166,7 +156,7 @@ export default function RepairedForm() {
               onChange={(e) => handleOtpChange(e.target.value, index)}
               onKeyDown={(e) => handleKeyDown(e, index)}
               ref={(el) => (inputRefs.current[index] = el)}
-              className="w-14 h-14 text-center text-lg border border-[var(--secondary)] rounded-lg focus:border-[var(--primary)] focus:outline-none font-bold tracking-widest bg-white  text-black dark:text-white"
+              className="w-14 h-14 text-center text-lg border border-[var(--secondary)] rounded-lg focus:border-[var(--primary)] focus:outline-none font-bold tracking-widest bg-white text-black dark:text-white"
             />
           ))}
         </div>
@@ -230,7 +220,7 @@ export default function RepairedForm() {
 function InputField({ label, name, value, onChange, placeholder, type = "text" }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-[var(--secondary)]  mb-1">
+      <label className="block text-sm font-medium text-[var(--secondary)] mb-1">
         {label}
       </label>
       <input
@@ -239,7 +229,7 @@ function InputField({ label, name, value, onChange, placeholder, type = "text" }
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full border border-[var(--secondary)] rounded px-3 py-2 text-black "
+        className="w-full border border-[var(--secondary)] rounded px-3 py-2 text-black"
       />
     </div>
   );
@@ -249,7 +239,7 @@ function InputField({ label, name, value, onChange, placeholder, type = "text" }
 function TextAreaField({ label, name, value, onChange, placeholder }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-[var(--secondary)]  mb-1">
+      <label className="block text-sm font-medium text-[var(--secondary)] mb-1">
         {label}
       </label>
       <textarea
@@ -258,7 +248,7 @@ function TextAreaField({ label, name, value, onChange, placeholder }) {
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        className="w-full border border-[var(--secondary)] rounded px-3 py-2 text-black "
+        className="w-full border border-[var(--secondary)] rounded px-3 py-2 text-black"
       />
     </div>
   );
@@ -268,14 +258,14 @@ function TextAreaField({ label, name, value, onChange, placeholder }) {
 function SelectField({ label, name, value, onChange, options }) {
   return (
     <div>
-      <label className="block text-sm font-medium text-[var(--secondary)]  mb-1">
+      <label className="block text-sm font-medium text-[var(--secondary)] mb-1">
         {label}
       </label>
       <select
         name={name}
         value={value}
         onChange={onChange}
-        className="w-full border border-[var(--secondary)] rounded px-3 py-2 text-black "
+        className="w-full border border-[var(--secondary)] rounded px-3 py-2 text-black"
       >
         <option value="" disabled>
           Select {label}

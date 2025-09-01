@@ -1,14 +1,11 @@
 import { useEffect, useRef, useState } from "react";
 import { TiUser } from "react-icons/ti";
 import { IoLogOut } from "react-icons/io5";
-import { PiMoonFill } from "react-icons/pi";
-import { HiSun } from "react-icons/hi";
 import { SpinnerCircular } from "spinners-react";
 import { useNavigate } from "react-router-dom";
 
 const ProfilePopover = () => {
   const [showPopover, setShowPopover] = useState(false);
-  const [darkMode, setDarkMode] = useState(false);
   const [logoutLoading, setLogoutLoading] = useState(false);
   const navigate = useNavigate();
   const profileRef = useRef(null);
@@ -24,23 +21,6 @@ const ProfilePopover = () => {
     return () => window.removeEventListener("click", clickHandler);
   }, []);
 
-  useEffect(() => {
-    const dark = localStorage.getItem("theme") === "dark";
-    if (dark) {
-      document.documentElement.classList.add("dark");
-      setDarkMode(true);
-    } else {
-      document.documentElement.classList.remove("dark");
-      setDarkMode(false);
-    }
-  }, []);
-
-  const toggleDarkMode = () => {
-    const isDark = document.documentElement.classList.toggle("dark");
-    localStorage.setItem("theme", isDark ? "dark" : "light");
-    setDarkMode(isDark);
-  };
-
   return (
     <div className="relative" ref={profileRef}>
       {/* Profile Icon */}
@@ -55,27 +35,14 @@ const ProfilePopover = () => {
 
       {/* Popover Panel */}
       {showPopover && (
-        <div className="absolute top-[135%] dark:bg-[#383838] right-0 min-w-[220px] bg-white rounded-xl shadow-xl z-[101] p-4 transition-all duration-300">
+        <div className="absolute top-[135%] right-0 min-w-[220px] bg-white rounded-xl shadow-xl z-[101] p-4 transition-all duration-300">
           {/* Header */}
           <div className="flex items-center justify-between mb-3">
-            <span className="text-gray-700 dark:text-white font-semibold text-base">Username</span>
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                toggleDarkMode();
-              }}
-              className="bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition-all"
-            >
-              {darkMode ? (
-                <HiSun size={20} className="text-white bg-black" />
-              ) : (
-                <PiMoonFill size={20} className="text-gray-900 border-gray-900" />
-              )}
-            </button>
+            <span className="text-gray-700 font-semibold text-base">Username</span>
           </div>
 
           {/* Divider */}
-          <hr className="my-2 text-gray-900 dark:text-gray-400" />
+          <hr className="my-2 text-gray-900" />
 
           {/* Options */}
           <ul className="text-sm text-gray-600">
@@ -88,13 +55,8 @@ const ProfilePopover = () => {
                 if (logoutLoading) return;
                 setLogoutLoading(true);
 
-                // Wait for logout, then reset theme
+                // Wait for logout, then navigate
                 setTimeout(() => {
-                  // Reset to light mode AFTER logout is finished
-                  localStorage.setItem("theme", "light");
-                  document.documentElement.classList.remove("dark");
-                  setDarkMode(false);
-
                   setLogoutLoading(false);
                   navigate("/");
                 }, 3000);

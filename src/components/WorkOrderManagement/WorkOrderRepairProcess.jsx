@@ -60,9 +60,9 @@ export default function WorkOrderRepairProcess() {
   };
 
   return (
-    <div className="space-y-6 p-6 bg-white rounded h-[calc(100vh-300px)] overflow-y-auto custom-scrollbar">
+    <div className="space-y-6 px-6 py-0 bg-white rounded h-full overflow-y-auto custom-scrollbar">
       {/* Job Sheet Info */}
-      <section className="space-y-4">
+      {/* <section className="space-y-4">
         <h3 className="text-xl font-bold text-[var(--primary)] border-b pb-2">
           Job Sheet Information
         </h3>
@@ -75,11 +75,11 @@ export default function WorkOrderRepairProcess() {
             value="Customer reported intermittent charging issue. Initial inspection shows corrosion on port."
           />
         </div>
-      </section>
+      </section> */}
 
       {/* Diagnose Info */}
       <section className="space-y-4 mt-5">
-        <h3 className="text-xl font-bold text-[var(--primary)] border-b pb-2">
+        <h3 className="px-2 py-2 font-semibold text-[var(--primary)] border-b dark:border-gray-700">
           Engineer Diagnose Info
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -106,7 +106,7 @@ export default function WorkOrderRepairProcess() {
 
       {/* Parts Replacement */}
       <section className="space-y-4 mt-5">
-        <h3 className="text-xl font-bold text-[var(--primary)] border-b pb-2">
+        <h3 className="px-2 py-2 font-semibold text-[var(--primary)] border-b dark:border-gray-700">
           Parts Replacement Info
         </h3>
         {parts.map((partEntry, index) => (
@@ -192,7 +192,7 @@ export default function WorkOrderRepairProcess() {
 
       {/* Final Remarks */}
       <section className="space-y-4 mt-5">
-        <h3 className="text-xl font-bold text-[var(--primary)] border-b pb-2">
+        <h3 className="px-2 py-2 font-semibold text-[var(--primary)] border-b dark:border-gray-700">
           Final Remarks
         </h3>
         <textarea

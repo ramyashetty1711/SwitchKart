@@ -7,6 +7,9 @@ import DynamicDeviceForm from "./WorksheetForm";
 import Select from "react-select";
 import JobFormWrap from "./JobFormWrap";
 import { Tab } from "@headlessui/react";
+import WorkOrderRepairProcess from "./WorkOrderRepairProcess";
+import RepairedForm from "./RepairedForm";
+import WorkAssignment from "./WorkAssignment";
 
 
 export default function WorkOrderManagement() {
@@ -99,7 +102,7 @@ const [editValue, setEditValue] = useState("");
           )}
           <button
             onClick={() => setShowTable((prev) => !prev)}
-            className={`flex items-center gap-2 px-4 py-2 rounded shadow text-white ${
+            className={`flex items-center gap-2 px-4 py-2 rounded  text-white ${
               showTable ? "bg-[var(--primary)] hover:bg-[var(--third)]" : "bg-red-600 hover:bg-red-700"
             }`}
           >
@@ -110,7 +113,7 @@ const [editValue, setEditValue] = useState("");
 
       {showTable ? (
         <div className="overflow-x-auto h-[calc(100vh-200px)] custom-scrollbar">
-          <table className="min-w-full table-auto border-collapse border border-gray-200 shadow-md rounded-lg text-sm md:text-base">
+          <table className="min-w-full table-auto border-collapse border border-gray-200  rounded-lg text-sm md:text-base">
   <thead className="bg-purple-100 dark:bg-[var(--primary)] text-[var(--primary)] dark:text-gray-200 sticky top-0 z-10">
     <tr>
       <th className="px-6 py-3 text-left">S.No</th>
@@ -163,82 +166,193 @@ const [editValue, setEditValue] = useState("");
     setEditingField(null);
   }}
   title={<h2 className="text-lg font-semibold text-[var(--primary)] ">Work Order Details</h2>}
-  size="4xl"
+  size="5xl"
 >
   {selectedWorkOrder && (
     <div className="w-full space-y-6 max-h-[75vh] overflow-y-auto">
       {/* ✅ Job Info (always visible, common section) */}
-      <div className="bg-white dark:bg-gray-900 border rounded-lg shadow-md">
-        <h3 className="px-4 py-2 font-semibold text-[var(--primary)] border-b dark:border-gray-700">
-          Job Info
-        </h3>
-        <table className="w-full text-sm text-gray-700 dark:text-gray-300">
-          <tbody>
-            {[
-              ["Job Sheet Number", selectedWorkOrder.job_sheet_no, "job_sheet_no", "text"],
-              ["Category of Job Sheet", selectedWorkOrder.category_of_jobsheet, "category_of_jobsheet", "text"],
-              ["Submission Category", selectedWorkOrder.submission_category, "submission_category", "select", ["Walk-In", "Pickup", "Courier"]],
-              ["Repair Category", selectedWorkOrder.repair_category, "repair_category", "select", ["Software", "Hardware", "Replacement"]],
-              ["Status", selectedWorkOrder.status, "status", "select", ["Received", "In Progress", "Completed", "Delivered", "Closed"]],
-              ["RVS Status", selectedWorkOrder.rvs_status, "rvs_status", "text"],
-            ].map(([label, value, field, type, options = []], i) => (
-              <tr key={i} className={i % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : ""}>
-                <td className="px-4 py-2 font-medium">{label}</td>
-                <td className="px-4 py-2">
-                  {editingField === field ? (
-                    type === "select" ? (
-                      <Select
-                        className="text-black"
-                        defaultValue={{ label: value, value }}
-                        options={options.map((opt) => ({ label: opt, value: opt }))}
-                        onChange={(selected) => setEditValue(selected.value)}
-                      />
-                    ) : (
-                      <input
-                        type="text"
-                        value={editValue}
-                        onChange={(e) => setEditValue(e.target.value)}
-                        className="w-full px-2 py-1 border rounded text-black"
-                      />
-                    )
+      {/* ✅ Job Info (table with 2 fields per row) */}
+{/* ✅ Basic Details Section */}
+<div className="bg-white dark:bg-gray-900 border rounded-lg  mb-4">
+  <h3 className="px-4 py-2 font-semibold text-[var(--primary)] border-b dark:border-gray-700">
+    Customer & Address Details
+  </h3>
+  <table className="w-full text-sm text-gray-700 dark:text-gray-300">
+    <tbody>
+      {[
+        // Job Info
+        ["Job Sheet Number", selectedWorkOrder.job_sheet_no, "job_sheet_no", "text"],
+        ["Category of Job Sheet", selectedWorkOrder.category_of_jobsheet, "category_of_jobsheet", "text"],
+        ["Submission Category", selectedWorkOrder.submission_category, "submission_category", "select", ["Walk-In", "Pickup", "Courier"]],
+        ["Repair Category", selectedWorkOrder.repair_category, "repair_category", "select", ["Software", "Hardware", "Replacement"]],
+        ["Status", selectedWorkOrder.status, "status", "select", ["Received", "In Progress", "Completed", "Delivered", "Closed"]],
+        ["RVS Status", selectedWorkOrder.rvs_status, "rvs_status", "text"],
+
+        // Customer Info
+        ["Contact Number", selectedWorkOrder.contact_no, "contact_no", "text"],
+        ["Full Name", selectedWorkOrder.full_name, "full_name", "text"],
+        ["Alternate Number", selectedWorkOrder.alternate_no, "alternate_no", "text"],
+        ["Mail ID", selectedWorkOrder.mail_id, "mail_id", "text"],
+        ["Communication Channel", selectedWorkOrder.comm_channel, "comm_channel", "text"],
+        ["Address Line ", selectedWorkOrder.address_line, "address_line", "text"],
+        ["City", selectedWorkOrder.city, "city", "text"],
+        ["State", selectedWorkOrder.state, "state", "text"],
+        ["Pincode", selectedWorkOrder.pincode, "pincode", "text"],
+
+        // Issue Info
+        ["Issue Title", selectedWorkOrder.issue_title, "issue_title", "text"],
+        ["Issue Details", selectedWorkOrder.issue_details, "issue_details", "text"],
+      ].reduce((rows, field, idx, arr) => {
+        if (idx % 2 === 0) rows.push(arr.slice(idx, idx + 2)); // group 2 per row
+        return rows;
+      }, []).map((pair, rowIdx) => (
+        <tr key={rowIdx} className={rowIdx % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : ""}>
+          {pair.map(([label, value, field, type, options = []], colIdx) => (
+            <React.Fragment key={colIdx}>
+              <td className="px-4 py-2 font-medium w-1/4">{label}</td>
+              <td className="px-4 py-2 w-1/4">
+                {editingField === field ? (
+                  type === "select" ? (
+                    <Select
+                      className="text-black"
+                      defaultValue={{ label: value, value }}
+                      options={options.map((opt) => ({ label: opt, value: opt }))}
+                      onChange={(selected) => setEditValue(selected.value)}
+                    />
                   ) : (
-                    value || "Not Available"
-                  )}
-                </td>
-                <td className="px-4 py-2 text-right">
-                  {editingField === field ? (
-                    <button
-                      onClick={() => {
-                        const updated = { ...selectedWorkOrder, [field]: editValue };
-                        setSelectedWorkOrder(updated);
-                        setEditingField(null);
-                      }}
-                      className="text-green-600 font-semibold"
-                    >
-                      Save
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        setEditingField(field);
-                        setEditValue(typeof value === "string" ? value : "");
-                      }}
-                      className="text-[var(--secndary)] hover:text-gray-800"
-                    >
-                      <FaEdit size={14} />
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                    <input
+                      type="text"
+                      value={editValue}
+                      onChange={(e) => setEditValue(e.target.value)}
+                      className="w-full px-2 py-1 border rounded text-black"
+                    />
+                  )
+                ) : (
+                  value || "Not Available"
+                )}
+              </td>
+              <td className="px-4 py-2 text-right w-12">
+                {editingField === field ? (
+                  <button
+                    onClick={() => {
+                      const updated = { ...selectedWorkOrder, [field]: editValue };
+                      setSelectedWorkOrder(updated);
+                      setEditingField(null);
+                    }}
+                    className="text-green-600 font-semibold"
+                  >
+                    Save
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setEditingField(field);
+                      setEditValue(typeof value === "string" ? value : "");
+                    }}
+                    className="text-[var(--secondary)] hover:text-gray-800"
+                  >
+                    <FaEdit size={14} />
+                  </button>
+                )}
+              </td>
+            </React.Fragment>
+          ))}
+          {pair.length < 2 && (
+            <>
+              <td className="px-4 py-2 w-1/4"></td>
+              <td className="px-4 py-2 w-1/4"></td>
+              <td className="px-4 py-2 w-12"></td>
+            </>
+          )}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+{/* ✅ Handset Details Section */}
+{/* ✅ Handset Details Section (Editable) */}
+<div className="bg-white dark:bg-gray-900 border rounded-lg mb-4">
+  <h3 className="px-4 py-2 font-semibold text-[var(--primary)] border-b dark:border-gray-700">
+    Handset Details
+  </h3>
+  <table className="w-full text-sm text-gray-700 dark:text-gray-300">
+    <tbody>
+      {[
+        ["IMEI", selectedWorkOrder.imei, "imei"],
+        ["RAM", selectedWorkOrder.ram, "ram"],
+        ["Invoice No", selectedWorkOrder.invoice_no, "invoice_no"],
+        ["Model", selectedWorkOrder.model, "model"],
+        ["Color", selectedWorkOrder.color, "color"],
+        ["Activation Date", selectedWorkOrder.activation_date, "activation_date"],
+        ["Date of Purchase", selectedWorkOrder.dop, "dop"],
+        ["Warranty Status", selectedWorkOrder.warranty_status, "warranty_status"],
+        ["Remarks", selectedWorkOrder.remarks, "remarks"],
+      ].reduce((rows, field, idx, arr) => {
+        if (idx % 2 === 0) rows.push(arr.slice(idx, idx + 2));
+        return rows;
+      }, []).map((pair, rowIdx) => (
+        <tr key={rowIdx} className={rowIdx % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : ""}>
+          {pair.map(([label, value, field], colIdx) => (
+            <React.Fragment key={colIdx}>
+              <td className="px-4 py-2 font-medium w-1/4">{label}</td>
+              <td className="px-4 py-2 w-1/4">
+                {editingField === field ? (
+                  <input
+                    type="text"
+                    value={editValue}
+                    onChange={(e) => setEditValue(e.target.value)}
+                    className="w-full px-2 py-1 border rounded text-black"
+                  />
+                ) : (
+                  value || "Not Available"
+                )}
+              </td>
+              <td className="px-4 py-2 w-12">
+                {editingField === field ? (
+                  <button
+                    onClick={() => {
+                      const updated = { ...selectedWorkOrder, [field]: editValue };
+                      setSelectedWorkOrder(updated);
+                      setEditingField(null);
+                    }}
+                    className="text-green-600 font-semibold"
+                  >
+                    Save
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => {
+                      setEditingField(field);
+                      setEditValue(typeof value === "string" ? value : "");
+                    }}
+                    className="text-[var(--secondary)] hover:text-gray-800"
+                  >
+                    <FaEdit size={14} />
+                  </button>
+                )}
+              </td>
+            </React.Fragment>
+          ))}
+          {pair.length < 2 && (
+            <>
+              <td className="px-4 py-2 w-1/4"></td>
+              <td className="px-4 py-2 w-1/4"></td>
+              <td className="px-4 py-2 w-12"></td>
+            </>
+          )}
+        </tr>
+      ))}
+    </tbody>
+  </table>
+</div>
+
+
 
       {/* ✅ Tabs for Customer Info & Additional Info */}
       <Tab.Group>
         <Tab.List className="flex space-x-2 border-b border-gray-300 dark:border-gray-700 mb-4">
-          {["Receiving information", "Repair information", "Handover information", "RVS information", "Operation record"].map((tab, idx) => (
+          {["Work Assignment", "Engineer Diagnostics", "Handover information", ].map((tab, idx) => (
             <Tab
               key={idx}
               className={({ selected }) =>
@@ -257,113 +371,24 @@ const [editValue, setEditValue] = useState("");
         <Tab.Panels>
           {/* CUSTOMER INFO */}
           <Tab.Panel>
-            <div className="bg-white dark:bg-gray-900 border rounded-lg shadow-md">
-              <table className="w-full text-sm text-gray-700 dark:text-gray-300">
-                <tbody>
-                  {[
-                    ["Phone Number", selectedWorkOrder.phone_number, "phone_number", "text"],
-                    ["IMEI Number", selectedWorkOrder.imei_number, "imei_number", "text"],
-                  ].map(([label, value, field, type], i) => (
-                    <tr key={i} className={i % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : ""}>
-                      <td className="px-4 py-2 font-medium">{label}</td>
-                      <td className="px-4 py-2">
-                        {editingField === field ? (
-                          <input
-                            type="text"
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            className="w-full px-2 py-1 border rounded text-black"
-                          />
-                        ) : (
-                          value || "Not Available"
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        {editingField === field ? (
-                          <button
-                            onClick={() => {
-                              const updated = { ...selectedWorkOrder, [field]: editValue };
-                              setSelectedWorkOrder(updated);
-                              setEditingField(null);
-                            }}
-                            className="text-green-600 font-semibold"
-                          >
-                            Save
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setEditingField(field);
-                              setEditValue(value || "");
-                            }}
-                            className="text-[var(--secondary)] hover:text-gray-800"
-                          >
-                            <FaEdit size={14} />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="bg-white  border rounded-lg ">
+              <WorkAssignment/>
             </div>
           </Tab.Panel>
 
           {/* ADDITIONAL INFO */}
           <Tab.Panel>
-            <div className="bg-white dark:bg-gray-900 border rounded-lg shadow-md">
-              <table className="w-full text-sm text-gray-700 dark:text-gray-300">
-                <tbody>
-                  {[
-                    ["Receiving Time", formatDateTime(selectedWorkOrder.receiving_time), "receiving_time", "text"],
-                    ["Invoice Number", selectedWorkOrder.invoice_no, "invoice_no", "text"],
-                    ["Handle Method", selectedWorkOrder.handle_method, "handle_method", "text"],
-                    ["Source of Creation", selectedWorkOrder.source_of_creation, "source_of_creation", "text"],
-                  ].map(([label, value, field, type], i) => (
-                    <tr key={i} className={i % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : ""}>
-                      <td className="px-4 py-2 font-medium">{label}</td>
-                      <td className="px-4 py-2">
-                        {editingField === field ? (
-                          <input
-                            type="text"
-                            value={editValue}
-                            onChange={(e) => setEditValue(e.target.value)}
-                            className="w-full px-2 py-1 border rounded text-black"
-                          />
-                        ) : (
-                          value || "Not Available"
-                        )}
-                      </td>
-                      <td className="px-4 py-2 text-right">
-                        {editingField === field ? (
-                          <button
-                            onClick={() => {
-                              const updated = { ...selectedWorkOrder, [field]: editValue };
-                              setSelectedWorkOrder(updated);
-                              setEditingField(null);
-                            }}
-                            className="text-green-600 font-semibold"
-                          >
-                            Save
-                          </button>
-                        ) : (
-                          <button
-                            onClick={() => {
-                              setEditingField(field);
-                              setEditValue(value || "");
-                            }}
-                            className="text-[var(--secondary)] hover:text-gray-800"
-                          >
-                            <FaEdit size={14} />
-                          </button>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+            <div className="bg-white  border rounded-lg ">
+             <WorkOrderRepairProcess/>
             </div>
           </Tab.Panel>
+
+          <Tab.Panel>
+            <div className="bg-white border rounded-lg">
+             <RepairedForm/>
+            </div>
+          </Tab.Panel>
+          
         </Tab.Panels>
       </Tab.Group>
     </div>
