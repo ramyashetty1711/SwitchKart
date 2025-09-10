@@ -163,7 +163,7 @@ export default function DynamicDeviceForm() {
                 onClick={fetchCustomerInfo}
                 className="bg-[var(--primary)] text-white px-2 py-2 rounded hover:bg-[var(--primary)] h-fit self-end"
               >
-                Fetch
+                Get Customer Info
               </button>
             </div>
             {customerNotFound && (
@@ -238,7 +238,7 @@ export default function DynamicDeviceForm() {
                 onClick={fetchDeviceInfo}
                 className="bg-[var(--primary)] text-white px-2 py-2 rounded hover:bg-[var(--primary)] h-fit self-end"
               >
-                Fetch
+                Get Device Info
               </button>
             </div>
             {imeiEmpty && (

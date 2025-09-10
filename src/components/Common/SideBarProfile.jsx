@@ -3,7 +3,7 @@ import image from '../../assets/sidebar.png';
 
 export default function SideBarProfile() {
   return (
-    <div className="flex flex-col justify-start min-h-full bg-white dark:bg-black rounded-lg pt-4 px-2">
+    <div className="flex flex-col justify-start min-h-full bg-white dark:bg-black rounded-sm pt-4 px-2">
       <div className="relative h-40 w-full rounded-lg overflow-hidden">
         {/* Background Image */}
         <img

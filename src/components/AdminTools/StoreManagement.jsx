@@ -1,33 +1,77 @@
 import React, { useState } from "react";
-import StoreDataJSON from "./StoreData.json";
-import { FaEye, FaEdit, FaTrash, FaPlus, FaTimes } from "react-icons/fa";
+import { FaEye, FaTrash, FaEdit } from "react-icons/fa";
 import Modal from "../Common/Modal";
-import StoreFormTabs from "./StoreFormTabs";
-import { IoAdd } from "react-icons/io5";
+import Select from "react-select";
 import StoreAdditionForm from "./StoreAdditionForm";
-import Select from 'react-select';
+import { getUserRoles } from "../Common/UseFetch";
 
+// Sample store data
+const initialStores = [
+  {
+    id: 1,
+    name: "Switch Kart - MG Road",
+    address: "123 MG Road, Bengaluru, Karnataka - 560001",
+    isActive: true,
+    phone: "080-12345678",
+    email: "mgroad@switchkart.com",
+    manager: "Rajesh Kumar",
+    established: "2018-04-15",
+    gstNumber: "29ABCDE1234F1Z5",
+    storeType: "Retail Outlet",
+    staffCount: 15,
+    services: ["Repair", "Sales", "Pickup"],
+    customersServed: 12000,
+    avgServiceTime: "30 mins",
+    rating: 4.5,
+    timing: "9 AM - 9 PM",
+    mapLink: "https://maps.google.com/?q=Switch+Kart+MG+Road",
+  },
+  {
+    id: 2,
+    name: "Switch Kart - T Nagar",
+    address: "45 North Usman Road, Chennai, Tamil Nadu - 600017",
+    isActive: true,
+    phone: "044-23456789",
+    email: "tnagar@switchkart.com",
+    manager: "S. Ramya",
+    established: "2017-11-05",
+    gstNumber: "33ABCDE1234F1Z5",
+    storeType: "Franchise",
+    staffCount: 12,
+    services: ["Sales", "Service"],
+    customersServed: 9500,
+    avgServiceTime: "35 mins",
+    rating: 4.2,
+    timing: "10 AM - 8 PM",
+    mapLink: "https://maps.google.com/?q=Switch+Kart+T+Nagar",
+  },
+];
 
 export default function StoreManagement() {
-  const [storeData, setStoreData] = useState(StoreDataJSON);
+  const userRoles = getUserRoles();
+  const [storeData, setStoreData] = useState(initialStores);
   const [selectedStore, setSelectedStore] = useState(null);
   const [isViewModalOpen, setIsViewModalOpen] = useState(false);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
-  const [isCredentialsModalOpen, setIsCredentialsModalOpen] = useState(false);
-const [credentials, setCredentials] = useState({ username: "", password: "" });
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingField, setEditingField] = useState(null);
   const [editValue, setEditValue] = useState("");
 
+  const statusOptions = [
+    { value: true, label: "Active" },
+    { value: false, label: "Inactive" },
+  ];
+
+  const storeTypeOptions = [
+    { value: "Retail Outlet", label: "Retail Outlet" },
+    { value: "Warehouse", label: "Warehouse" },
+    { value: "Franchise", label: "Franchise" },
+  ];
+
+  // Handlers
   const handleView = (store) => {
     setSelectedStore(store);
     setIsViewModalOpen(true);
-  };
-
-  const handleEdit = (store) => {
-    setSelectedStore({ ...store });
-    setIsEditModalOpen(true);
   };
 
   const handleDelete = (store) => {
@@ -35,44 +79,74 @@ const [credentials, setCredentials] = useState({ username: "", password: "" });
     setIsDeleteModalOpen(true);
   };
 
-  const handleOpenCredentialsModal = (store) => {
-  setSelectedStore(store);
-  setCredentials({
-    username: store.username || "",
-    password: store.password || "",
-  });
-  setIsCredentialsModalOpen(true);
-};
-
-
-  const handleEditSave = () => {
-    if (!selectedStore.name.trim() || !selectedStore.address.trim()) {
-      alert("Please fill in all fields.");
-      return;
-    }
-    setStoreData((prevData) =>
-      prevData.map((store) => (store.id === selectedStore.id ? selectedStore : store))
-    );
-    setIsEditModalOpen(false);
-  };
-
   const handleConfirmDelete = () => {
-    setStoreData((prevData) => prevData.filter((store) => store.id !== selectedStore.id));
+    setStoreData((prev) => prev.filter((s) => s.id !== selectedStore.id));
     setIsDeleteModalOpen(false);
   };
 
   const handleAddStore = (newStore) => {
     const newId = Math.max(...storeData.map((s) => s.id)) + 1;
-    const newEntry = { id: newId, ...newStore };
-    setStoreData((prev) => [...prev, newEntry]);
+    setStoreData((prev) => [...prev, { id: newId, ...newStore }]);
     setShowAddForm(false);
   };
 
+  // Editable field renderer
+  const renderEditableField = (field, value) => {
+    if (editingField === field && userRoles.includes(1)) {
+      if (field === "isActive") {
+        return (
+          <Select
+            options={statusOptions}
+            value={statusOptions.find((opt) => opt.value === editValue)}
+            onChange={(selected) => setEditValue(selected.value)}
+          />
+        );
+      } else if (field === "storeType") {
+        return (
+          <Select
+            options={storeTypeOptions}
+            value={storeTypeOptions.find((opt) => opt.value === editValue)}
+            onChange={(selected) => setEditValue(selected.value)}
+          />
+        );
+      } else if (field === "services") {
+        return (
+          <input
+            type="text"
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="w-full px-2 py-1 border border-gray-300 rounded"
+          />
+        );
+      } else {
+        return (
+          <input
+            type={
+              field === "rating" || field === "staffCount" || field === "customersServed"
+                ? "number"
+                : "text"
+            }
+            value={editValue}
+            onChange={(e) => setEditValue(e.target.value)}
+            className="w-full px-2 py-1 border border-gray-300 rounded"
+          />
+        );
+      }
+    } else {
+      if (field === "isActive") return value ? "Active" : "Inactive";
+      if (field === "services") return value.join(", ");
+      return value;
+    }
+  };
+
   return (
-    <div className="">
+    <div className="w-full h-full p-4 bg-white dark:bg-gray-900 rounded-lg">
       <div className="flex justify-between items-center mb-6">
-        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">Store Management</h2>
-        <button
+        <h2 className="text-xl font-semibold text-gray-800 dark:text-white">
+          Store Management
+        </h2>
+       {userRoles.includes(1) && (
+         <button
           onClick={() => setShowAddForm(!showAddForm)}
           className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium transition-all ${
             showAddForm
@@ -80,16 +154,21 @@ const [credentials, setCredentials] = useState({ username: "", password: "" });
               : "bg-[var(--primary)] text-white hover:bg-[var(--third)]"
           }`}
         >
-          {showAddForm ? <><FaTimes /> Close</> : <><FaPlus /> Add Store</>}
+          {showAddForm ? "Close" : "Add Store"}
         </button>
+       )}
       </div>
 
-      {showAddForm && <div className="mb-6"><StoreAdditionForm/> </div>}
+      {showAddForm && (
+        <div className="mb-6">
+          <StoreAdditionForm onAddStore={handleAddStore} />
+        </div>
+      )}
 
       {!showAddForm && (
         <div className="overflow-x-auto max-h-[65vh] custom-scrollbar mt-2">
           <table className="min-w-full table-auto border-collapse border border-gray-200 shadow-md rounded-lg overflow-hidden">
-            <thead className="bg-purple-100  text-[var(--primary)] dark:text-gray-100 sticky top-0 z-10">
+            <thead className="bg-purple-100 text-[var(--primary)] dark:text-gray-100 sticky top-0 z-10">
               <tr>
                 <th className="px-4 py-2 text-left font-medium">S.No</th>
                 <th className="px-4 py-2 text-left font-medium">Store Name</th>
@@ -100,30 +179,41 @@ const [credentials, setCredentials] = useState({ username: "", password: "" });
             </thead>
             <tbody className="divide-y divide-gray-200 bg-white dark:bg-gray-900 text-gray-800 dark:text-gray-200">
               {storeData.map((store, index) => (
-                <tr key={store.id} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                <tr
+                  key={store.id}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-800"
+                >
                   <td className="px-4 py-2">{index + 1}</td>
                   <td className="px-4 py-2">{store.name}</td>
                   <td className="px-4 py-2">{store.address}</td>
                   <td className="px-4 py-2">
-                    <span className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
-                      store.isActive
-                        ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-white"
-                        : "bg-red-100 text-red-700 dark:bg-red-700 dark:text-white"
-                    }`}>
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-sm font-medium ${
+                        store.isActive
+                          ? "bg-green-100 text-green-700 dark:bg-green-700 dark:text-white"
+                          : "bg-red-100 text-red-700 dark:bg-red-700 dark:text-white"
+                      }`}
+                    >
                       {store.isActive ? "Active" : "Inactive"}
                     </span>
                   </td>
                   <td className="px-4 py-2 flex gap-2">
-                    <button title="View" className="p-2 rounded-full bg-purple-100 text-[var(--primary)]  dark:text-white border border-[var(--primary)] hover:bg-[var(--third)] hover:text-white transition-all" onClick={() => handleView(store)}><FaEye size={16} /></button>
                     <button
-  title="Add Credentials"
-  className="p-2 rounded-full bg-gray-100 text-[var(--secondary)]  dark:text-white border border-[var(--secondary)] hover:bg-[var(--secondary)] hover:text-white transition-all"
-  onClick={() => handleOpenCredentialsModal(store)}
->
-  <IoAdd size={16} />
-</button>
-
-                    <button title="Delete" className="p-2 rounded-full bg-red-100 text-red-700 dark:bg-red-950 dark:text-white border border-red-400 hover:bg-red-600 hover:text-white transition-all" onClick={() => handleDelete(store)}><FaTrash size={16} /></button>
+                      title="View"
+                      className="p-2 rounded-full bg-purple-100 text-[var(--primary)] border border-[var(--primary)] hover:bg-[var(--third)] hover:text-white transition-all"
+                      onClick={() => handleView(store)}
+                    >
+                      <FaEye size={16} />
+                    </button>
+                    {userRoles.includes(1) && (
+                      <button
+                        title="Delete"
+                        className="p-2 rounded-full bg-red-100 text-red-700 border border-red-400 hover:bg-red-600 hover:text-white transition-all"
+                        onClick={() => handleDelete(store)}
+                      >
+                        <FaTrash size={16} />
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -133,68 +223,68 @@ const [credentials, setCredentials] = useState({ username: "", password: "" });
       )}
 
       {/* View Modal */}
-      <Modal isOpen={isViewModalOpen} onClose={() => { setIsViewModalOpen(false); setEditingField(null); }} title={<h2 className="text-lg font-semibold text-[var(--primary)]">Store Details</h2>} size="xl">
+      <Modal
+        isOpen={isViewModalOpen}
+        onClose={userRoles.includes(1) ? () => { setIsViewModalOpen(false); setEditingField(null); } : undefined}
+        title={
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-semibold text-[var(--primary)]">Store Details</h2>
+            
+          </div>
+        }
+        size="xl"
+      >
         {selectedStore && (
           <div className="space-y-6 max-h-[70vh] overflow-y-auto px-1">
-            {[{
-              title: "Basic Info",
-              rows: [
-                ["Store Name", selectedStore.name, "name"],
-                ["Address", selectedStore.address, "address"],
-                ["Status", selectedStore.isActive ? "Active" : "Inactive", "isActive"],
-                ["Store Type", selectedStore.storeType || "Not Available", "storeType"],
-                ["Established", selectedStore.establishedDate || "Not Available", "establishedDate"]
-              ]
-            }, {
-              title: "Contact Info",
-              rows: [
-                ["Phone", selectedStore.phone || "Not Available", "phone"],
-                ["Email", selectedStore.email || "Not Available", "email"],
-                ["Manager", selectedStore.manager || "Not Available", "manager"]
-              ]
-            }, {
-              title: "Operational Info",
-              rows: [
-                ["Staff Count", selectedStore.staffCount || "Not Available", "staffCount"],
-                ["Customers Served", selectedStore.customersServed || "Not Available", "customersServed"],
-                ["Service Time", selectedStore.timing || "Not Available", "timing"],
-                ["Rating", selectedStore.rating ? `${selectedStore.rating} / 5` : "Not Rated", "rating"]
-              ]
-            }, {
-              title: "Additional Info",
-              rows: [
-                ["GST Number", selectedStore.gstNumber || "Not Available", "gstNumber"],
-                ["Services", selectedStore.services || "Not Available", "services"],
-                ["Google Maps", selectedStore.mapLink ? <a href={selectedStore.mapLink} target="_blank" rel="noopener noreferrer" className="text-blue-600 underline">View on Map</a> : "Not Available", "mapLink"]
-              ]
-            }].map((section, idx) => (
-              <div key={idx} className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow-md">
-                <div className="bg-purple-100  px-4 py-2 rounded-t-lg flex justify-between items-center">
-                  <h3 className="text-md font-semibold text-[var(--primary)] dark:text-white">{section.title}</h3>
-                </div>
-                <table className="w-full text-sm">
-                  <tbody>
-                    {section.rows.map(([label, value, field], i) => (
-                      <tr key={i} className={i % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : "bg-white dark:bg-gray-900"}>
-                        <td className="py-2 px-4 font-medium text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 w-1/3">{label}</td>
-                        <td className="py-2 px-4 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700">
-                          {editingField === field ? (
-                            <input
-                              type="text"
-                              value={editValue}
-                              onChange={(e) => setEditValue(e.target.value)}
-                              className="w-full px-2 py-1 border border-gray-300 rounded"
-                            />
-                          ) : (
-                            value
-                          )}
-                        </td>
-                        <td className="py-2 px-4 text-right border-t border-gray-200 dark:border-gray-700 w-10">
-                          {editingField === field ? (
+            <div className="bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-700 rounded-lg shadow-md">
+              <div className="bg-purple-100 px-4 py-2 rounded-t-lg flex justify-between items-center">
+                <h3 className="text-md font-semibold text-[var(--primary)] dark:text-white">
+                  Basic Info
+                </h3>
+              </div>
+              <table className="w-full text-sm">
+                <tbody>
+                  {[
+                    ["Store Name", selectedStore.name, "name"],
+                    ["Address", selectedStore.address, "address"],
+                    ["Status", selectedStore.isActive, "isActive"],
+                    ["Phone", selectedStore.phone, "phone"],
+                    ["Email", selectedStore.email, "email"],
+                    ["Manager", selectedStore.manager, "manager"],
+                    ["Established", selectedStore.established, "established"],
+                    ["GST Number", selectedStore.gstNumber, "gstNumber"],
+                    ["Store Type", selectedStore.storeType, "storeType"],
+                    ["Staff Count", selectedStore.staffCount, "staffCount"],
+                    ["Services", selectedStore.services, "services"],
+                    ["Customers Served", selectedStore.customersServed, "customersServed"],
+                    ["Avg Service Time", selectedStore.avgServiceTime, "avgServiceTime"],
+                    ["Rating", selectedStore.rating, "rating"],
+                    ["Timing", selectedStore.timing, "timing"],
+                    ["Map Link", selectedStore.mapLink, "mapLink"],
+                  ].map(([label, value, field], i) => (
+                    <tr
+                      key={i}
+                      className={i % 2 === 0 ? "bg-gray-50 dark:bg-gray-800" : "bg-white dark:bg-gray-900"}
+                    >
+                      <td className="py-2 px-4 font-medium text-gray-600 dark:text-gray-300 border-t border-gray-200 dark:border-gray-700 w-1/3">
+                        {label}
+                      </td>
+                      <td className="py-2 px-4 text-gray-800 dark:text-gray-100 border-t border-gray-200 dark:border-gray-700">
+                        {renderEditableField(field, value)}
+                      </td>
+                      <td className="py-2 px-4 text-right border-t border-gray-200 dark:border-gray-700 w-10">
+                        {userRoles.includes(1) && (
+                          editingField === field ? (
                             <button
                               onClick={() => {
-                                const updatedStore = { ...selectedStore, [field]: editValue };
+                                const updatedStore = {
+                                  ...selectedStore,
+                                  [field]: field === "services" ? editValue.split(",").map(s => s.trim()) : editValue
+                                };
                                 setSelectedStore(updatedStore);
+                                setStoreData((prev) =>
+                                  prev.map((s) => (s.id === updatedStore.id ? updatedStore : s))
+                                );
                                 setEditingField(null);
                               }}
                               className="text-green-600 hover:text-green-800 font-semibold text-sm"
@@ -206,165 +296,48 @@ const [credentials, setCredentials] = useState({ username: "", password: "" });
                               title={`Edit ${label}`}
                               onClick={() => {
                                 setEditingField(field);
-                                setEditValue(typeof value === "string" ? value : "");
+                                setEditValue(field === "services" ? value.join(", ") : value);
                               }}
                               className="text-[var(--secondary)] hover:text-gray-800"
                             >
                               <FaEdit size={14} />
                             </button>
-                          )}
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            ))}
+                          )
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </Modal>
 
-      {/* Delete Confirmation Modal */}
-<Modal
-  isOpen={isDeleteModalOpen}
-  onClose={() => setIsDeleteModalOpen(false)}
-  title={<h2 className="text-lg font-semibold text-red-600">Confirm Deletion</h2>}
->
-  <div className="text-gray-800 dark:text-gray-100 p-4">
-    <p>Are you sure you want to delete <strong>{selectedStore?.name}</strong>?</p>
-    <div className="mt-6 flex justify-end gap-4">
-      <button
-        onClick={() => setIsDeleteModalOpen(false)}
-        className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-600"
+      {/* Delete Modal */}
+      <Modal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        title={<h2 className="text-lg font-semibold text-red-600">Confirm Deletion</h2>}
       >
-        Cancel
-      </button>
-      <button
-        onClick={handleConfirmDelete}
-        className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-      >
-        Confirm Delete
-      </button>
-    </div>
-  </div>
-</Modal>
-
-{/* Credentials Modal */}
-<Modal
-  isOpen={isCredentialsModalOpen}
-  onClose={() => setIsCredentialsModalOpen(false)}
-  title={
-    <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
-      
-      <h2 className="text-lg font-semibold text-[var(--primary)]">Add Store Credentials</h2>
-    </div>
-  }
->
-  <div className="text-gray-800 dark:text-gray-100 px-6 py-6 space-y-5">
-    {/* Username */}
-    <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        Username
-      </label>
-      <input
-        type="text"
-        value={credentials.username}
-        onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-        placeholder="Enter store username"
-        className="w-full px-4 py-2 border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
-
-    {/* Password */}
-    <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        Password
-      </label>
-      <input
-        type="password"
-        value={credentials.password}
-        onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-        placeholder="Enter store password"
-        className="w-full px-4 py-2 border rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
-
-    {/* Role Select */}
-    <div className="space-y-1.5">
-      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-        Role / Store Type
-      </label>
-      <Select
-        options={[
-          { value: 'Front Desk Executive', label: 'Front Desk Executive' },
-          { value: 'Engineer', label: 'Engineer' },
-          { value: 'Support Staff', label: 'Support Staff' },
-        ]}
-        value={
-          credentials.storeType
-            ? {
-                value: credentials.storeType,
-                label:
-                  credentials.storeType.charAt(0).toUpperCase() +
-                  credentials.storeType.slice(1),
-              }
-            : null
-        }
-        onChange={(selected) =>
-          setCredentials({ ...credentials, storeType: selected.value })
-        }
-        placeholder="Select role"
-        className="react-select-container text-sm text-black "
-        classNamePrefix="react-select"
-        styles={{
-          control: (base, state) => ({
-            ...base,
-            backgroundColor: 'white',
-            borderColor: state.isFocused ? '#3b82f6' : '#d1d5db',
-            boxShadow: state.isFocused ? '0 0 0 1px #3b82f6' : 'none',
-            '&:hover': { borderColor: '#3b82f6' },
-            borderRadius: '0.375rem',
-            padding: '1px',
-          }),
-          menu: (base) => ({
-            ...base,
-            backgroundColor: 'white',
-            borderRadius: '0.375rem',
-            zIndex: 50,
-          }),
-        }}
-      />
-    </div>
-
-    {/* Buttons */}
-    <div className="flex justify-end gap-4 pt-6">
-      <button
-        onClick={() => setIsCredentialsModalOpen(false)}
-        className="px-4 py-2 rounded-md   text-white dark:text-white bg-red-500 dark:bg-gray-800 hover:bg-red-600 dark:hover:bg-red-600 transition-shadow"
-      >
-        Cancel
-      </button>
-      <button
-        onClick={() => {
-          const updated = storeData.map((store) =>
-            store.id === selectedStore.id
-              ? { ...store, ...credentials }
-              : store
-          );
-          setStoreData(updated);
-          setIsCredentialsModalOpen(false);
-        }}
-        className="px-5 py-2 rounded-md bg-[var(--primary)]  hover:bg-[var(--third)] text-white hover:from-blue-700 hover:to-blue-600 transition shadow-md hover:shadow-lg"
-      >
-        Save Credentials
-      </button>
-    </div>
-  </div>
-</Modal>
-
-
-
-
+        <div className="text-gray-800 dark:text-gray-100 p-4">
+          <p>Are you sure you want to delete <strong>{selectedStore?.name}</strong>?</p>
+          <div className="mt-6 flex justify-end gap-4">
+            <button
+              onClick={() => setIsDeleteModalOpen(false)}
+              className="px-4 py-2 bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white rounded hover:bg-gray-400 dark:hover:bg-gray-600"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleConfirmDelete}
+              className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
+            >
+              Confirm Delete
+            </button>
+          </div>
+        </div>
+      </Modal>
     </div>
   );
 }

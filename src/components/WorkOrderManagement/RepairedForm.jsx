@@ -79,7 +79,7 @@ export default function RepairedForm() {
   return (
     <form
       onSubmit={handleSubmit}
-      className="space-y-6 p-6 bg-white rounded h-full overflow-y-auto custom-scrollbar"
+      className="space-y-6  bg-white rounded h-full overflow-y-auto custom-scrollbar"
     >
       <h2 className="px-2 py-2 font-semibold text-[var(--primary)] border-b dark:border-gray-700">
         Repaired Handover Form

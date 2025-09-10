@@ -32,7 +32,7 @@ const Modal = ({
 
   return (
     <div
-      className="absolute inset-0 z-150 flex items-center rounded-lg justify-center bg-black/50 bg-opacity-50"
+      className="absolute inset-0 z-1500 flex items-center rounded-lg justify-center bg-black/50 bg-opacity-50"
       onClick={onHide}
     >
       <div

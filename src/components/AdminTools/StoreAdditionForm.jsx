@@ -123,7 +123,7 @@ export default function StoreFullDetailForm({ onAddStore }) {
       <div className="flex justify-end mt-8">
         <button
           onClick={handleSubmit}
-          className="bg-purple-600 hover:bg-purple-700 text-white font-semibold px-6 py-2 rounded-md transition-all duration-200"
+          className="bg-[var(--primary)] hover:bg-[var(--third)] text-white font-semibold px-6 py-2 rounded-md transition-all duration-200"
         >
           Add Store
         </button>

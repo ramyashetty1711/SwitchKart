@@ -1,16 +1,17 @@
 import { createSlice } from "@reduxjs/toolkit";
 
 const initialState = {
-  ActiveFilter: "",
+  activeFilter: "",
   isRegisterModalOpen: false,
+  loggedInStatus: false, // new field
 };
 
-const DataSlice = createSlice({
-  name: "counter",
+const dataSlice = createSlice({
+  name: "data",
   initialState,
   reducers: {
-    ActiveFilterUpdate: (state, action) => {
-      state.ActiveFilter = action.payload;
+    updateActiveFilter: (state, action) => {
+      state.activeFilter = action.payload;
     },
     openRegisterModal: (state) => {
       state.isRegisterModalOpen = true;
@@ -18,9 +19,23 @@ const DataSlice = createSlice({
     closeRegisterModal: (state) => {
       state.isRegisterModalOpen = false;
     },
+    updateLoggedInStatus: (state, action) => {
+      state.loggedInStatus = action.payload; // true / false
+    },
   },
 });
 
-export const { ActiveFilterUpdate,openRegisterModal, closeRegisterModal } = DataSlice.actions;
+export const {
+  updateActiveFilter,
+  openRegisterModal,
+  closeRegisterModal,
+  updateLoggedInStatus,
+} = dataSlice.actions;
 
-export default DataSlice.reducer;
+// Optional selectors
+export const selectActiveFilter = (state) => state.data.activeFilter;
+export const selectIsRegisterModalOpen = (state) =>
+  state.data.isRegisterModalOpen;
+export const selectLoggedInStatus = (state) => state.data.loggedInStatus;
+
+export default dataSlice.reducer;

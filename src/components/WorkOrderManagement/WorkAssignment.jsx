@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Select from "react-select";
 
 // Mock employee list
 const employees = [
@@ -7,131 +8,74 @@ const employees = [
   { id: 3, name: "Charlie Brown" },
 ];
 
+// Convert to react-select options
+const employeeOptions = employees.map((emp) => ({
+  value: emp.name,
+  label: emp.name,
+}));
+
 export default function WorkAssignment() {
-  const [assignedTo, setAssignedTo] = useState("");
+  const [assignedTo, setAssignedTo] = useState(null);
   const [task, setTask] = useState("");
-  const [startDate, setStartDate] = useState("");
-  const [endDate, setEndDate] = useState("");
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log("Assigned Work:", { assignedTo, task, startDate, endDate });
+    console.log("Assigned Work:", { assignedTo, task });
     alert("Work assigned. Check console for details.");
-    // Reset form
-    setAssignedTo("");
+    setAssignedTo(null);
     setTask("");
-    setStartDate("");
-    setEndDate("");
   };
 
   return (
-    <div className="space-y-6 p-6 bg-white rounded h-full overflow-y-auto custom-scrollbar">
-      <form onSubmit={handleSubmit}>
-        <section className="space-y-4">
-          <h3 className="px-2 py-2 font-semibold text-[var(--primary)] border-b dark:border-gray-700">
-            Assign Work
-          </h3>
+    <div className="p-4 bg-white rounded">
+      <form onSubmit={handleSubmit} className="space-y-3">
+        <h3 className="px-4 py-2 font-semibold text-[var(--primary)] border-b dark:border-gray-700">
+          Assign Work
+        </h3>
 
-          {/* Dropdown for Employee */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <div>
-              <label
-                htmlFor="assignedTo"
-                className="block text-sm font-medium text-black mb-1"
-              >
-                Assign To *
-              </label>
-              <select
-                id="assignedTo"
-                name="assignedTo"
-                value={assignedTo}
-                onChange={(e) => setAssignedTo(e.target.value)}
-                required
-                className="w-full border border-[var(--secondary)] rounded px-3 py-2 text-black"
-              >
-                <option value="">Select Employee</option>
-                {employees.map((emp) => (
-                  <option key={emp.id} value={emp.name}>
-                    {emp.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Task Description */}
-            <div className="md:col-span-3">
-              <label
-                htmlFor="task"
-                className="block text-sm font-medium text-black mb-1"
-              >
-                Task Details *
-              </label>
-              <textarea
-                id="task"
-                name="task"
-                rows={4}
-                value={task}
-                onChange={(e) => setTask(e.target.value)}
-                required
-                className="w-full border border-[var(--secondary)] rounded px-3 py-2 text-black"
-              ></textarea>
-            </div>
-
-            {/* Start Date */}
-            <div>
-              <label
-                htmlFor="startDate"
-                className="block text-sm font-medium text-black mb-1"
-              >
-                Start Date *
-              </label>
-              <input
-                type="date"
-                id="startDate"
-                name="startDate"
-                value={startDate}
-                onChange={(e) => setStartDate(e.target.value)}
-                required
-                className="border p-2 w-full rounded border-[var(--secondary)] text-black"
-              />
-            </div>
-
-            {/* End Date */}
-            <div>
-              <label
-                htmlFor="endDate"
-                className="block text-sm font-medium text-black mb-1"
-              >
-                End Date *
-              </label>
-              <input
-                type="date"
-                id="endDate"
-                name="endDate"
-                value={endDate}
-                onChange={(e) => setEndDate(e.target.value)}
-                required
-                className="border p-2 w-full rounded border-[var(--secondary)] text-black"
-              />
-            </div>
+        {/* Row: Employee + Task in the same line */}
+        <div className="flex flex-col md:flex-row gap-2">
+          {/* Employee Select */}
+          <div className="flex-1 space-y-1">
+            <label className="text-sm font-medium">Assign To *</label>
+            <Select
+              options={employeeOptions}
+              value={assignedTo}
+              onChange={(selected) => setAssignedTo(selected)}
+              placeholder="Select Employee"
+              className="text-black"
+            />
           </div>
-        </section>
+
+          {/* Task Input */}
+          <div className="flex-1 space-y-1">
+            <label className="text-sm font-medium">Task / Remarks *</label>
+            <input
+              type="text"
+              value={task}
+              onChange={(e) => setTask(e.target.value)}
+              required
+              className="w-full border border-[var(--secondary)] rounded px-2 py-1 text-black"
+              placeholder="Enter task or remarks"
+            />
+          </div>
+        </div>
 
         {/* Buttons */}
-        <div className="flex justify-end gap-4 mt-6">
+        <div className="flex justify-end gap-2 mt-2">
           <button
             type="button"
             onClick={() => {
-              console.log("Saved Draft:", { assignedTo, task, startDate, endDate });
+              console.log("Saved Draft:", { assignedTo, task });
               alert("Draft saved. Check console.");
             }}
-            className="bg-[var(--secondary)] text-white px-6 py-2 rounded shadow-md"
+            className="bg-[var(--secondary)] text-white px-4 py-1 rounded text-sm"
           >
             Save
           </button>
           <button
             type="submit"
-            className="bg-green-600 text-white px-6 py-2 rounded shadow-md"
+            className="bg-green-600 text-white px-4 py-1 rounded text-sm"
           >
             Assign
           </button>

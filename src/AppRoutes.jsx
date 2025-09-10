@@ -12,9 +12,13 @@ import ArticleManagement from "./components/ArticleManagement/ArticleManagement"
 import BasicData from "./components/BasicData/BasicData";
 import ReportManagement from "./components/ReportManagement/ReportManagement";
 import AdminTools from "./components/AdminTools/AdminTools";
+import UserManagement from "./components/UserManagement/UserManagement";
+import UserRegister from "./components/UserRegister/UserRegister";
+import ProtectedRoute from "./components/Common/ProtectedRoutes";
+import StoreManagement from "./components/AdminTools/StoreManagement";
 
 export default function AppRoutes() {
-  const AppRoutes = [
+  const appRoutes = [
     { path: "/home", component: <Home /> },
     { path: "/workorder", component: <WorkOrderManagement /> },
     { path: "/sc-management", component: <SCManagement /> },
@@ -24,15 +28,27 @@ export default function AppRoutes() {
     { path: "/artice-management", component: <ArticleManagement /> },
     { path: "/basic-data", component: <BasicData /> },
     { path: "/report-management", component: <ReportManagement /> },
-    { path: "/admin-tools", component: <AdminTools /> },
+    { path: "/admin-tools/store-management", component: <StoreManagement/> },
+    { path: "/admin-tools/user-management", component: <UserManagement /> },
+    { path: "/admin-tools/register-user", component: <UserRegister /> },
   ];
+
   return (
     <Router>
       <Routes>
-        <Route element={<Login />} path="/" />
-        <Route element={<Navbar />}>
-          {AppRoutes.map((item) => (
-            <Route path={item.path} element={item.component} />
+        {/* Public login route */}
+        <Route path="/" element={<Login />} />
+
+        {/* Protected routes */}
+        <Route
+          element={
+            <ProtectedRoute>
+              <Navbar />
+            </ProtectedRoute>
+          }
+        >
+          {appRoutes.map((item, index) => (
+            <Route key={index} path={item.path} element={item.component} />
           ))}
         </Route>
       </Routes>
